@@ -1,22 +1,34 @@
 'use client'
 
 import Chance from 'chance';
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
+import Cell from "@/components/Cell";
 const chance = new Chance();
 
-interface BoardMeta {
+export interface BoardMeta {
     cols: number,
     rows: number,
+    cellValues: number[],
     colors: string[],
     colorKeys: React.JSX.Element[],
-    circleValues: (number | null)[] // Allow for possible null values if no circle
+    circleValues: (number | null)[],
+    colorSums: Record<string, number>,
+    valueUpdates: number,
 }
 
 export default function Board({ selectedValue }: any) {
     const [boardMeta, setBoardMeta] = React.useState<BoardMeta | undefined>();
+
     useEffect(() => {
         generateBoardMeta(setBoardMeta);
     }, []);
+
+    useEffect(() => {
+        if (boardMeta) {
+            checkSums(boardMeta);
+        }
+    }, [boardMeta]);
+
     return (
         <div className="block">
             {boardMeta && (
@@ -40,15 +52,16 @@ export default function Board({ selectedValue }: any) {
                                     <Cell
                                         bgColor={boardMeta.colors[index]}
                                         selectedValue={selectedValue}
-                                        className="relative h-full w-full"
+                                        boardMeta={boardMeta}
+                                        setBoardMeta={setBoardMeta}
+                                        cellIndex={index}
                                     />
                                     {showCircle && boardMeta.circleValues[circleIndex] !== null && (
                                         <div
                                             className="absolute h-8 w-8 bg-white rounded-full shadow-md flex justify-center items-center z-20"
-                                            /* (h-8 / 2) + (gap-2 / 2)*/
                                             style={{
-                                                bottom: '-20px',
-                                                right: '-20px',
+                                                bottom: '-18px',
+                                                right: '-18px',
                                             }}
                                         >
                                             {boardMeta.circleValues[circleIndex]}
@@ -64,10 +77,6 @@ export default function Board({ selectedValue }: any) {
     );
 }
 
-function Cell({ bgColor, selectedValue, className }: { bgColor: string; selectedValue: any; className?: string }) {
-    return <div className={`${bgColor} ${className}`}></div>;
-}
-
 function generateBoardMeta(setBoardMeta: any) {
     const PREDEFINED_COLORS = ['bg-[#992522]/80', 'bg-[#251D7D]/80', 'bg-[#218524]/80', 'bg-[#229699]/80', 'bg-[#852182]/80'];
     const rows = chance.weighted([3, 4, 5], [80, 15, 5]);
@@ -78,6 +87,11 @@ function generateBoardMeta(setBoardMeta: any) {
 
     const colors: string[] = [];
     const colorKeys: React.JSX.Element[] = [];
+    const colorSums: Record<string, number> = {};
+    PREDEFINED_COLORS.slice(0, numColors).forEach((color) => {
+        colorSums[color] = 0;
+    });
+
     for (let i = 0; i < numCells; i++) {
         const colorWeights: number[] = [];
         PREDEFINED_COLORS.slice(0, numColors).forEach((color, j) => {
@@ -86,13 +100,17 @@ function generateBoardMeta(setBoardMeta: any) {
             colorWeights.push(odds);
         });
         const colorIndex = chance.weighted([0, 1, 2, 3, 4].slice(0, numColors), colorWeights);
-        colors.push(PREDEFINED_COLORS[colorIndex]);
+        const chosenColor = PREDEFINED_COLORS[colorIndex];
+        colors.push(chosenColor);
+
+        // Increment color sum with a random value
+        colorSums[chosenColor] += Math.floor(Math.random() * 9) + 1;
     }
+
     PREDEFINED_COLORS.slice(0, numColors).forEach((_, i) => {
         const color = PREDEFINED_COLORS[i];
         const numOfColor = colors.filter(c => c === PREDEFINED_COLORS[i]).length;
-        const colorSum = Math.floor(Math.random() * (numOfColor * 9) + numOfColor);
-        colorKeys.push(<div key={i} className={`h-10 w-10 ${color} flex justify-center items-center`}>{colorSum}</div>);
+        colorKeys.push(<div key={i} className={`h-10 w-10 ${color} flex justify-center items-center`}>{colorSums[color]}</div>);
     });
 
     // Generate circle values
@@ -100,12 +118,62 @@ function generateBoardMeta(setBoardMeta: any) {
     for (let i = 0; i < circleValues.length; i++) {
         circleValues[i] = Math.floor(Math.random() * 36) + 4;
     }
+    const cellValues: number[] = Array(colors.length).fill(0);
 
     setBoardMeta({
         cols,
         rows,
+        cellValues,
         colors,
         colorKeys,
         circleValues,
+        colorSums,
+    });
+}
+
+function checkSums(boardMeta: BoardMeta) {
+    const { cols, rows, colors, colorSums, circleValues, cellValues } = boardMeta;
+
+    // Check color sums
+    const calculatedColorSums: Record<string, number> = {};
+    let i = 0;
+    colors.forEach(color => {
+        if (isNaN(cellValues[i])) {
+            calculatedColorSums[color] = 0;
+        } else {
+            if (!calculatedColorSums[color]) {
+                calculatedColorSums[color] = cellValues[i];
+            } else {
+                calculatedColorSums[color] += cellValues[i];
+            }
+        }
+        i++;
+    });
+
+    for (const color in calculatedColorSums) {
+        if (calculatedColorSums[color] === colorSums[color]) {
+            console.log(`Matched color sum for ${color}: ${calculatedColorSums[color]}`);
+        } else {
+            console.log(`Mismatch color sum for ${color}: ${calculatedColorSums[color]} (expected: ${colorSums[color]})`);
+        }
+    }
+
+    // Check circle sums
+    circleValues.forEach((value, index) => {
+        if (value !== null) {
+            const row = Math.floor(index / (cols - 1));
+            const col = index % (cols - 1);
+            const topLeftIndex = row * cols + col;
+            const topRightIndex = topLeftIndex + 1;
+            const bottomLeftIndex = topLeftIndex + cols;
+            const bottomRightIndex = bottomLeftIndex + 1;
+
+            const sum = parseInt(cellValues[topLeftIndex]) + parseInt(cellValues[topRightIndex]) + parseInt(cellValues[bottomLeftIndex]) + parseInt(cellValues[bottomRightIndex]);
+            if (sum === value) {
+                console.log(`Matched circle sum at (${row}, ${col}): ${sum}`);
+            } else {
+                console.log(`Mismatch circle sum at (${row}, ${col}): ${sum} (expected: ${value})`);
+            }
+        }
     });
 }
