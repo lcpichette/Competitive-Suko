@@ -1,29 +1,4 @@
-import type { Metadata } from "next";
-import StyleProvider from "@/providers/StyleProvider";
-import localFont from "next/font/local";
 import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-export const metadata: Metadata = {
-  title: 'Competitive Sudoku - Daily Challenges',
-  description: 'Challenge your Sudoku skills with daily puzzles and rankings.',
-  openGraph: {
-    title: 'Competitive Sudoku',
-    description: 'Join daily challenges and track your scores!',
-    url: 'https://yourdomain.com',
-  },
-};
-
 
 export default function RootLayout({
   children,
@@ -32,11 +7,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      <StyleProvider>
-        {children}
-      </StyleProvider>
-      </body>
+    <body className={"min-h-screen max-h-screen min-w-screen max-w-screen bg-grain bg-white box-border"}>
+    <div className={"z-10 relative"}>
+      {children}
+    </div>
+    {
+    /*<div className="z-1 fixed -right-[25%] -bottom-[25%] w-[50vh] h-[50vh] md:w-[75vh] md:h-[75vh] pointer-events-none bg-gradient-to-tr from-white/60 to-amber-500/60 rounded-full blur-2xl"></div>*/
+    }
+    </body>
     </html>
   );
 }
+
