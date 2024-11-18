@@ -168,7 +168,7 @@ function checkSums(boardMeta: BoardMeta) {
             const bottomLeftIndex = topLeftIndex + cols;
             const bottomRightIndex = bottomLeftIndex + 1;
 
-            const sum = parseInt(cellValues[topLeftIndex]) + parseInt(cellValues[topRightIndex]) + parseInt(cellValues[bottomLeftIndex]) + parseInt(cellValues[bottomRightIndex]);
+            const sum = cellValues[topLeftIndex] + cellValues[topRightIndex] + cellValues[bottomLeftIndex] + cellValues[bottomRightIndex];
             if (sum === value) {
                 console.log(`Matched circle sum at (${row}, ${col}): ${sum}`);
             } else {

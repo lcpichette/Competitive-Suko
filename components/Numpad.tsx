@@ -42,7 +42,6 @@ export default function Numpad({ selectedValue, setSelectedValue }: any) {
 }
 
 const ring = (cellValue: number, selectedValue: any) => {
-    console.log('cellValue (', cellValue, ') == selectedValue (', selectedValue, ')');
     if (cellValue == selectedValue) {
         return 'ring-2 ring-red-500 ring-offset-2'
     } else {
