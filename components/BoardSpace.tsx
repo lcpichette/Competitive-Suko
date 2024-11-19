@@ -15,7 +15,7 @@ export default function BoardSpace() {
                     <Board selectedValue={selectedValue || 1}/>
                 </div>
                 <div className={"w-full md:w-1/3 flex md:items-left md:justify-start self-end"}>
-                    <Numpad selectedValue={selectedValue} setSelectedValue={setSelectedValue}/>
+                    <Numpad selectedValue={selectedValue || 1} setSelectedValueAction={setSelectedValue}/>
                 </div>
             </div>
         </div>
