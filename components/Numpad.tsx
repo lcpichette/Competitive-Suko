@@ -1,13 +1,24 @@
 'use client'
 import React, { useEffect } from "react";
 
-export default function Numpad({ selectedValue, setSelectedValue }: any) {
+interface Props {
+    selectedValue: number;
+    setSelectedValueAction: React.Dispatch<React.SetStateAction<number | undefined>>;
+}
+
+export default function Numpad({ selectedValue, setSelectedValueAction }: Props) {
     const [handPreference, setHandPreference] = React.useState<'Left' | 'Right'>('Right');
     const [numpadCollapsed, setNumpadCollapsed] = React.useState(false);
     useEffect(() => {
-        const handleKeyDown = (event: any) => {
-            if (!isNaN(event.key) && event.key !== " " && event.key !== 0) {
-                setSelectedValue(event.key);
+        const handleKeyDown = (event: unknown) => {
+            if (typeof event === 'object' && event && 'key' in event && event.key) {
+                if (typeof event.key === 'number' && event.key !== 0) {
+                    const newValue: number = event.key;
+                    setSelectedValueAction(newValue);
+                } else if (typeof event.key === 'string') {
+                    const newValue: number = parseInt(event.key);
+                    setSelectedValueAction(newValue);
+                }
             }
         };
         window.addEventListener("keydown", handleKeyDown);
@@ -18,14 +29,14 @@ export default function Numpad({ selectedValue, setSelectedValue }: any) {
 
     const coreButtonStyle = "h-14 w-14 flex justify-center items-center rounded-md ";
     const fullButtonStyle = `${coreButtonStyle} bg-suko-200/40 border border-suko-200/80`
-    const numpadProps = {
+    const numpadProps: NumpadProps = {
         fullButtonStyle,
         handPreference,
-        setHandPreference,
+        setHandPreferenceAction: setHandPreference,
         numpadCollapsed,
-        setNumpadCollapsed,
+        setNumpadCollapsedAction: setNumpadCollapsed,
         selectedValue,
-        setSelectedValue
+        setSelectedValueAction
     }
     return (
         <div className={"block w-full"}>
@@ -41,7 +52,7 @@ export default function Numpad({ selectedValue, setSelectedValue }: any) {
     );
 }
 
-const ring = (cellValue: number, selectedValue: any) => {
+const ring = (cellValue: number, selectedValue: number) => {
     if (cellValue == selectedValue) {
         return 'ring-2 ring-red-500 ring-offset-2'
     } else {
@@ -49,10 +60,20 @@ const ring = (cellValue: number, selectedValue: any) => {
     }
 }
 
-function RightHanded({fullButtonStyle, handPreference, setHandPreference, numpadCollapsed, setNumpadCollapsed, selectedValue, setSelectedValue }: any) {
+interface NumpadProps {
+    fullButtonStyle: string,
+    handPreference: string,
+    setHandPreferenceAction: React.Dispatch<React.SetStateAction<"Left" | "Right">>,
+    numpadCollapsed: boolean,
+    setNumpadCollapsedAction: React.Dispatch<React.SetStateAction<boolean>>,
+    selectedValue: number,
+    setSelectedValueAction: React.Dispatch<React.SetStateAction<number | undefined>>
+}
+
+function RightHanded({fullButtonStyle, handPreference, setHandPreferenceAction, numpadCollapsed, setNumpadCollapsedAction, selectedValue, setSelectedValueAction }: NumpadProps) {
     return (
         <>
-            <button className={`${fullButtonStyle}`} onClick={() => setHandPreference('Left')}>
+            <button className={`${fullButtonStyle}`} onClick={() => setHandPreferenceAction('Left')}>
                 <svg className={"-rotate-12 size-6"} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                      strokeWidth={1.5}
                      stroke="currentColor">
@@ -65,13 +86,13 @@ function RightHanded({fullButtonStyle, handPreference, setHandPreference, numpad
                 {!numpadCollapsed &&
                     <div className={"grid gap-2 max-w-fit min-w-fit justify-center align-top grid-cols-3"}>
                         {[...Array(9).keys()].map((_, i) => (
-                            <button onClick={() => setSelectedValue(i + 1)} type="button" key={i}
+                            <button onClick={() => setSelectedValueAction(i + 1)} type="button" key={i}
                                     className={`${fullButtonStyle} ${ring(i + 1, selectedValue)}`}>{i + 1}</button>
                         ))}
                     </div>
                 }
                 <button className={`${fullButtonStyle} self-end ml-2`}
-                        onClick={() => setNumpadCollapsed(!numpadCollapsed)}>
+                        onClick={() => setNumpadCollapsedAction(!numpadCollapsed)}>
                     {!numpadCollapsed
                         ?
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
@@ -92,13 +113,13 @@ function RightHanded({fullButtonStyle, handPreference, setHandPreference, numpad
     )
 }
 
-function LeftHanded({fullButtonStyle, handPreference, setHandPreference, numpadCollapsed, setNumpadCollapsed, selectedValue, setSelectedValue }: any) {
+function LeftHanded({fullButtonStyle, handPreference, setHandPreferenceAction, numpadCollapsed, setNumpadCollapsedAction, selectedValue, setSelectedValueAction }: NumpadProps) {
     return (
         <>
             <div
                 className={`md:w-1/3 flex md:items-left md:justify-start ${handPreference === 'Right' ? 'self-end' : 'self-start'}`}>
                 <button className={`${fullButtonStyle} self-end mr-2`}
-                        onClick={() => setNumpadCollapsed(!numpadCollapsed)}>
+                        onClick={() => setNumpadCollapsedAction(!numpadCollapsed)}>
                     {!numpadCollapsed
                         ?
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
@@ -117,13 +138,13 @@ function LeftHanded({fullButtonStyle, handPreference, setHandPreference, numpadC
                 {!numpadCollapsed &&
                     <div className={"grid gap-2 max-w-fit min-w-fit justify-center align-top grid-cols-3"}>
                         {[...Array(9).keys()].map((_, i) => (
-                            <button onClick={() => setSelectedValue(i + 1)} type="button" key={i}
+                            <button onClick={() => setSelectedValueAction(i + 1)} type="button" key={i}
                                     className={`${fullButtonStyle} ${ring(i + 1, selectedValue)}`}>{i + 1}</button>
                         ))}
                     </div>
                 }
             </div>
-            <button className={`${fullButtonStyle}`} onClick={() => setHandPreference('Right')}>
+            <button className={`${fullButtonStyle}`} onClick={() => setHandPreferenceAction('Right')}>
                 <svg className={"rotate-12 size-6"} xmlns="http://www.w3.org/2000/svg" fill="none"
                      viewBox="0 0 24 24" strokeWidth={1.5}
                      stroke="currentColor">

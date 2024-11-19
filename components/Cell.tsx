@@ -7,17 +7,17 @@ interface Props {
     bgColor: string;
     selectedValue: number;
     boardMeta: BoardMeta;
-    setBoardMeta: any;
+    setBoardMetaAction: React.Dispatch<React.SetStateAction<BoardMeta | undefined>>;
     cellIndex: number;
 }
 
-export default function Cell({ bgColor, selectedValue, boardMeta, setBoardMeta, cellIndex }: Props) {
+export default function Cell({ bgColor, selectedValue, boardMeta, setBoardMetaAction, cellIndex }: Props) {
     const [value, setValue] = React.useState(0);
 
     function updateValue() {
         setValue(selectedValue);
         boardMeta.cellValues[cellIndex] = selectedValue;
-        setBoardMeta({
+        setBoardMetaAction({
             ...boardMeta,
             valueUpdates: boardMeta.valueUpdates + 1,
             cellValues: [...boardMeta.cellValues],

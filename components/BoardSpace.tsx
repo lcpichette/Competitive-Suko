@@ -12,7 +12,7 @@ export default function BoardSpace() {
             <div
                 className={"mx-3 md:mx-10 flex flex-col md:flex-row gap-4 md:gap-20 items-center justify-end pb-16 h-full max-h-inherit"}>
                 <div className={"w-full md:w-2/3 flex justify-center md:items-right md:justify-end self-center"}>
-                    <Board selectedValue={selectedValue}/>
+                    <Board selectedValue={selectedValue || 1}/>
                 </div>
                 <div className={"w-full md:w-1/3 flex md:items-left md:justify-start self-end"}>
                     <Numpad selectedValue={selectedValue} setSelectedValue={setSelectedValue}/>
